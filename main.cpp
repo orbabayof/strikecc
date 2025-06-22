@@ -1,4 +1,5 @@
 #include <iostream>
+#include <print>
 #include <string_view>
 
 #include "lex.hpp"
@@ -7,22 +8,21 @@
 
 int main() {
   std::string_view line = "int main main;\n";
-  std::list<Token> list = {Token::lexLine(line)};
+  std::list<Token> list = Token::lexLine(line);
 
   Parser parser { std::move(list) };
 
-  printContainer(parser._lexer._tokenlist);
+  printContainer(parser._tokenlist);
   std::cout << '\n';
 
-
-  while(!parser._lexer.endOfLexing())
+  while(!parser.endOfParsing())
   {
     [[maybe_unused]]auto curr { parser.parseExpr() };
 
     if(curr)
-      std::cout << curr->toString() << '\n';
+      std::println("{}", curr->toString());
   }
-
   
+
   return 0;
 }

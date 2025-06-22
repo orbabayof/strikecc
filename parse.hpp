@@ -14,12 +14,24 @@ public:
   std::unique_ptr<ExprBase> parseBinaryExpr();
   std::unique_ptr<ExprBase> parseTypeExpr();
 
-  void moveToNextToken() { _lexer.nextToken(); }
+  const Token &nextToken();
+  const Token &currToken();
+
+  void setTypeOfNext();
+  ExprType typeOfCurr();
+
+  bool isNextToken(Token::tokenType type);
+  bool endOfParsing();
 
   friend int main();
 
 private:
-  Lexer _lexer;
+  std::list<Token> _tokenlist{};
+  std::list<Token>::iterator _currToken{};
+
+  std::unordered_map<std::string_view, ExprType> _idToType{};
+
+  static inline Token eof { Token::eofToken, "eof" };
 
   std::unique_ptr<ExprBase> parsePrimary();
 };

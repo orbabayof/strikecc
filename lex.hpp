@@ -80,24 +80,3 @@ struct Token {
   static tokenType toTokenType(std::string_view token);
 };
 
-class Lexer {
-public:
-  Lexer(std::list<Token> &&tokenlist);
-  const Token &nextToken();
-  const Token &currToken();
-
-  void setTypeOfNext();
-  ExprType typeOfCurr();
-
-  bool endOfLexing();
-
-  friend int main();
-
-private:
-  std::list<Token> _tokenlist{};
-  std::list<Token>::iterator _currToken{};
-
-  std::unordered_map<std::string_view, ExprType> _idToType{};
-
-  static inline Token eof { Token::eofToken, "eof" };
-};

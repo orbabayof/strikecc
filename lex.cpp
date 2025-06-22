@@ -1,5 +1,4 @@
 #include "lex.hpp"
-#include "util.hpp"
 
 #include <cassert>
 #include <cctype>
@@ -144,61 +143,3 @@ Token::Token(tokenType typeOfToken, std::string_view tokenStr)
 Token::Token(std::string_view tokenStr)
     : Token(toTokenType(tokenStr), tokenStr) {}
 
-Lexer::Lexer(std::list<Token> &&tokenlist)
-    : _tokenlist(std::move(tokenlist)){
-  // add eof Token
-  _tokenlist.emplace_back(eof);
-  _currToken = _tokenlist.begin();
-}
-
-const Token &Lexer::currToken() {
-  return *_currToken;
-}
-const Token &Lexer::nextToken() {
-  std::advance(_currToken, 1);
-  return currToken();
-}
-
-void Lexer::setTypeOfNext() {
-  auto switchType = [this]() {
-    // TODO add more types
-    switch (currToken().type) {
-    case Token::intToken:
-      return ExprType::i32_t;
-    case Token::doubleToken:
-      return ExprType::double_t;
-    case Token::floatToken:
-      return ExprType::float_t;
-    case Token::voidToken:
-      return ExprType::void_t;
-    case Token::structToken:
-      return ExprType::struct_t;
-
-    default: {
-      std::ostringstream out{};
-      out << "cannot get type of " << _currToken->type;
-      throw std::runtime_error(out.str());
-    }
-    }
-  };
-
-  ExprType Idtype{switchType()};
-  nextToken();
-  if (currToken().type != Token::identifierToken) {
-    // TODO type casting
-    throw std::runtime_error("after a type should come an identifier");
-  }
-
-  _idToType[currToken().str] = Idtype;
-}
-
-ExprType Lexer::typeOfCurr() {
-  if (!_idToType.contains(currToken().str))
-    throw std::runtime_error(
-        (std::ostringstream{} << currToken().str << " id is not registered")
-            .str());
-
-  return _idToType[currToken().str];
-}
-
-bool Lexer::endOfLexing() { return currToken().type == Token::eofToken; }
