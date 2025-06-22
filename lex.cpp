@@ -1,4 +1,5 @@
 #include "lex.hpp"
+#include "util.hpp"
 
 #include <cassert>
 #include <cctype>
@@ -13,16 +14,23 @@
 std::string_view toString(ExprType type) {
   using enum ExprType;
   switch (type) {
-    case i32_t: return "int";
-    case i16_t: return "short";
-    case i8_t: return "char";
-    case float_t: return "float";
-    case double_t: return "double";
-    case struct_t: return "struct";
-    case void_t: return "void";
+  case i32_t:
+    return "int";
+  case i16_t:
+    return "short";
+  case i8_t:
+    return "char";
+  case float_t:
+    return "float";
+  case double_t:
+    return "double";
+  case struct_t:
+    return "struct";
+  case void_t:
+    return "void";
   }
 }
-static inline void clearSpacePrefix(std::string_view &str) {
+static constexpr void clearSpacePrefix(std::string_view &str) {
   while (str.length() > 0 && std::isspace(str.front()))
     str.remove_prefix(1);
 }
@@ -65,6 +73,9 @@ std::string_view Token::strTokenFromLine(std::string_view line) {
   std::size_t length{0};
   while (length < line.length() && !std::isspace(line[length])) {
     if (isBrace(line[length]) && length != 0) {
+      break;
+    }
+    if (length > 1 && line[length] == ';') {
       break;
     }
     ++length;
@@ -119,23 +130,29 @@ std::string_view Token::toString(tokenType type) {
     return "integerLiteral";
   case identifierToken:
     return "identifier";
+
+  case eofToken:
+    return "eof";
   }
+
   return "";
 }
 
-Token::Token(std::string_view tokenStr) : str(tokenStr) {
-  type = toTokenType(str);
-}
+Token::Token(tokenType typeOfToken, std::string_view tokenStr)
+    : type(typeOfToken), str(tokenStr) {}
+
+Token::Token(std::string_view tokenStr)
+    : Token(toTokenType(tokenStr), tokenStr) {}
 
 Lexer::Lexer(std::list<Token> &&tokenlist)
-    : _tokenlist(std::move(tokenlist)), _currToken(_tokenlist.begin()) {
-  assert(!_tokenlist.empty());
+    : _tokenlist(std::move(tokenlist)){
+  // add eof Token
+  _tokenlist.emplace_back(eof);
+  _currToken = _tokenlist.begin();
 }
-const Token &Lexer::currToken() {
-  if (_currToken != _tokenlist.end())
-    return *_currToken;
 
-  throw std::runtime_error("you got to the end of the list");
+const Token &Lexer::currToken() {
+  return *_currToken;
 }
 const Token &Lexer::nextToken() {
   std::advance(_currToken, 1);
@@ -144,9 +161,6 @@ const Token &Lexer::nextToken() {
 
 void Lexer::setTypeOfNext() {
   auto switchType = [this]() {
-    if (_currToken == _tokenlist.begin())
-      throw std::runtime_error("LexView: could not get type of curr");
-
     // TODO add more types
     switch (currToken().type) {
     case Token::intToken:
@@ -179,8 +193,12 @@ void Lexer::setTypeOfNext() {
 }
 
 ExprType Lexer::typeOfCurr() {
-  if(!_idToType.contains(currToken().str))
-    throw std::runtime_error((std::ostringstream{} << currToken().str << " id is not registered").str());
+  if (!_idToType.contains(currToken().str))
+    throw std::runtime_error(
+        (std::ostringstream{} << currToken().str << " id is not registered")
+            .str());
 
   return _idToType[currToken().str];
 }
+
+bool Lexer::endOfLexing() { return currToken().type == Token::eofToken; }

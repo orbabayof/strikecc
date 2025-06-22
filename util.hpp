@@ -3,7 +3,7 @@
 #include <iostream>
 #include "lex.hpp"
 
-template <typename T> void printContainer(T cont) {
+template <typename T> void printContainer(const T& cont) {
   bool comma = false;
   std::cout << "{ ";
 

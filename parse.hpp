@@ -4,7 +4,7 @@
 
 class Parser {
 public:
-  Parser(std::list<Token> tokenList);
+  Parser(std::list<Token>&& tokenList);
 
   std::unique_ptr<ExprBase> parseExpr();
 
@@ -13,6 +13,10 @@ public:
   std::unique_ptr<ExprBase> parseIdentifierExpr();
   std::unique_ptr<ExprBase> parseBinaryExpr();
   std::unique_ptr<ExprBase> parseTypeExpr();
+
+  void moveToNextToken() { _lexer.nextToken(); }
+
+  friend int main();
 
 private:
   Lexer _lexer;

@@ -7,9 +7,13 @@
 #include <stdexcept>
 #include <string_view>
 
+
+Parser::Parser(std::list<Token>&& tokenList): _lexer(std::move(tokenList)) {}
 std::unique_ptr<ExprBase> Parser::parseTypeExpr() {
   // eats type
   _lexer.setTypeOfNext();
+  // now we are at the identifier token
+  return std::make_unique<TypeExpr>(_lexer.typeOfCurr());
 }
 std::unique_ptr<ExprBase> Parser::parseNumberExpr() {
   std::string_view numAsStr{_lexer.currToken().str};
@@ -44,18 +48,13 @@ std::unique_ptr<ExprBase> Parser::parseParenExpr() {
 
 std::unique_ptr<ExprBase> Parser::parseIdentifierExpr() {
   std::string_view id = _lexer.currToken().str;
-  std::unique_ptr<ExprBase> identifierExpr{nullptr};
 
   ExprType idType{_lexer.typeOfCurr()};
-  // simple variable
-  if (_lexer.currToken().type != Token::openParentToken) {
-    identifierExpr = std::make_unique<VariableExpr>(id, idType);
+  //eats id
+  if (_lexer.nextToken().type != Token::openParentToken) {
+    // simple variable
+    return std::make_unique<VariableExpr>(id, idType);
   }
-
-  // eat id
-  _lexer.nextToken();
-  // go to next token
-  _lexer.nextToken();
 
   std::vector<std::unique_ptr<ExprBase>> args{};
   while (_lexer.currToken().type != Token::closeParentToken) {
@@ -83,10 +82,14 @@ std::unique_ptr<ExprBase> Parser::parseIdentifierExpr() {
     return std::make_unique<CallExpr>(id, std::move(args), idType);
   }
 
-  return identifierExpr;
+  return nullptr;
 }
 
-std::unique_ptr<ExprBase> Parser::parseBinaryExpr() { return {}; }
+
+std::unique_ptr<ExprBase> Parser::parseBinaryExpr() { return {
+
+
+}; }
 
 std::unique_ptr<ExprBase> Parser::parsePrimary()
 {
@@ -96,9 +99,28 @@ std::unique_ptr<ExprBase> Parser::parsePrimary()
     case identifierToken: return parseIdentifierExpr();
     case integerLiteralToken: return parseNumberExpr();
     case openParentToken: return parseParenExpr();
+    case intToken: 
+    case doubleToken: 
+    case floatToken:
+    case voidToken:
+    case structToken:
+        return parseTypeExpr();
+
+    case semicolonToken:
+    {
+      _lexer.nextToken();
+      return nullptr;
+    }
     default:
     {
       throw std::runtime_error("unexpected token when parsing");
     }
   }
 }
+
+std::unique_ptr<ExprBase> Parser::parseExpr()
+{
+  return parsePrimary();
+}
+
+

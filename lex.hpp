@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <functional>
 #include <list>
 #include <string_view>
 #include <unordered_map>
@@ -19,9 +20,6 @@ enum class ExprType {
 std::string_view toString(ExprType type);
 
 struct Token {
-public:
-  Token(std::string_view token);
-
   // remember to add reserved ones to table
   enum tokenType {
     closeBraceToken,
@@ -43,6 +41,13 @@ public:
     integerLiteralToken,
     identifierToken,
 
+    plusToken,
+    minusToken,
+    devToken,
+    multToken,
+    assignToken,
+
+    eofToken,
   };
 
   static inline std::unordered_map<std::string_view, tokenType>
@@ -55,7 +60,13 @@ public:
           {"{", openBraceToken},   {"}", closeBraceToken},
           {"(", openParentToken},  {")", closeParentToken},
           {";", semicolonToken},   {",", commaToken},
+
+          {"-", minusToken},       {"+", plusToken},
+          {"/", devToken},         {"*", multToken},
       };
+
+  Token(std::string_view token);
+  Token(tokenType typeOfToken, std::string_view tokenStr);
 
   static std::list<Token> lexLine(std::string_view line);
 
@@ -78,11 +89,15 @@ public:
   void setTypeOfNext();
   ExprType typeOfCurr();
 
+  bool endOfLexing();
+
   friend int main();
 
 private:
   std::list<Token> _tokenlist{};
   std::list<Token>::iterator _currToken{};
-  
-  std::unordered_map<std::string_view, ExprType> _idToType {};
+
+  std::unordered_map<std::string_view, ExprType> _idToType{};
+
+  static inline Token eof { Token::eofToken, "eof" };
 };
