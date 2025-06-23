@@ -3,11 +3,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstddef>
-#include <iostream>
-#include <iterator>
 #include <list>
-#include <sstream>
-#include <stdexcept>
 #include <string_view>
 
 std::string_view toString(ExprType type) {

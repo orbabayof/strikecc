@@ -1,6 +1,5 @@
 #pragma once
 #include <cassert>
-#include <functional>
 #include <list>
 #include <string_view>
 #include <unordered_map>

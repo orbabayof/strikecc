@@ -13,8 +13,8 @@ exe = executable(
   'strikecc',
   'main.cpp',
   'lex.cpp',
-  'exprTypes.cpp',
-    'parse.cpp',
+  'gen.cpp',
+  'parse.cpp',
   install : true,
   dependencies : dependencies,
 )

@@ -1,37 +1,34 @@
-#include "exprTypes.hpp"
+#pragma once
 #include <list>
-#include <memory>
+#include "lex.hpp"
+#include "ast.hpp"
 
 class Parser {
 public:
-  Parser(std::list<Token>&& tokenList);
+  Parser(std::list<Token> tokenList);
 
-  std::unique_ptr<ExprBase> parseExpr();
+  Program parse();
+  Expr expr();
 
-  std::unique_ptr<ExprBase> parseNumberExpr();
-  std::unique_ptr<ExprBase> parseParenExpr();
-  std::unique_ptr<ExprBase> parseIdentifierExpr();
-  std::unique_ptr<ExprBase> parseBinaryExpr();
-  std::unique_ptr<ExprBase> parseTypeExpr();
+  Stmt returnExpr();
+  const Token &consume();
+  const Token &peek();
 
-  const Token &nextToken();
-  const Token &currToken();
+  bool setTypeOfNext();
+  Token::tokenType typeOfCurr();
 
-  void setTypeOfNext();
-  ExprType typeOfCurr();
-
-  bool isNextToken(Token::tokenType type);
+  bool checkNext(Token::tokenType type);
   bool endOfParsing();
 
   friend int main();
+
+  [[nodiscard]] std::string codeGen();
 
 private:
   std::list<Token> _tokenlist{};
   std::list<Token>::iterator _currToken{};
 
-  std::unordered_map<std::string_view, ExprType> _idToType{};
+  std::unordered_map<std::string_view, Token::tokenType> _idToType{};
 
-  static inline Token eof { Token::eofToken, "eof" };
-
-  std::unique_ptr<ExprBase> parsePrimary();
+  static inline Token eof{Token::eofToken, "eof"};
 };
